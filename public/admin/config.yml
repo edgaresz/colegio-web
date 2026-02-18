@@ -2,7 +2,7 @@ backend:
   name: github
   repo: "edgaresz/colegio-web"
   branch: "main"
-  base_url: https://uemcl-oauth.suarezedgar215.workers.dev/
+  base_url: https://uemcl-oauth.suarezedgar215.workers.dev
   auth_endpoint: auth
   commit_messages:
     create: "cms: crear {{collection}} “{{slug}}”"

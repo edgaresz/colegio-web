@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: "TU_USUARIO/TU_REPO"
+  repo: "edgaresz/colegio-web"
   branch: "main"
   commit_messages:
     create: "cms: crear {{collection}} “{{slug}}”"
@@ -10,7 +10,7 @@ backend:
     deleteMedia: "cms: eliminar media “{{path}}”"
 
 # URL pública del sitio (Cloudflare Pages / dominio final)
-site_url: "https://TU_DOMINIO.pages.dev"
+site_url: "https://uemcl.pages.dev"
 
 # Donde se guardan imágenes subidas desde el CMS
 media_folder: "public/uploads"

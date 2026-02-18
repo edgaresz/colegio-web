@@ -1,0 +1,89 @@
+backend:
+  name: github
+  repo: "TU_USUARIO/TU_REPO"
+  branch: "main"
+  commit_messages:
+    create: "cms: crear {{collection}} “{{slug}}”"
+    update: "cms: actualizar {{collection}} “{{slug}}”"
+    delete: "cms: eliminar {{collection}} “{{slug}}”"
+    uploadMedia: "cms: subir media “{{path}}”"
+    deleteMedia: "cms: eliminar media “{{path}}”"
+
+# URL pública del sitio (Cloudflare Pages / dominio final)
+site_url: "https://TU_DOMINIO.pages.dev"
+
+# Donde se guardan imágenes subidas desde el CMS
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+locale: "es"
+
+collections:
+  # =====================
+  # PÁGINAS EDITABLES
+  # =====================
+  - name: "pages"
+    label: "Páginas"
+    files:
+      - name: "quienes_somos"
+        label: "Conócenos"
+        file: "src/content/pages/quienes-somos.md"
+        fields:
+          - { label: "Título", name: "title", widget: "string" }
+          - { label: "Descripción corta", name: "description", widget: "string", required: false }
+          - { label: "Contenido", name: "body", widget: "markdown" }
+
+      - name: "mision_vision"
+        label: "Misión y Visión"
+        file: "src/content/pages/mision-vision.md"
+        fields:
+          - { label: "Título", name: "title", widget: "string" }
+          - { label: "Misión", name: "mission", widget: "text" }
+          - { label: "Visión", name: "vision", widget: "text" }
+
+      - name: "contacto"
+        label: "Contacto"
+        file: "src/content/pages/contacto.md"
+        fields:
+          - { label: "Título", name: "title", widget: "string" }
+          - { label: "Dirección", name: "address", widget: "string", required: false }
+          - { label: "Teléfono", name: "phone", widget: "string", required: false }
+          - { label: "Correo", name: "email", widget: "string", required: false }
+          - { label: "Mapa (URL embed)", name: "mapEmbedUrl", widget: "string", required: false }
+          - { label: "Contenido adicional", name: "body", widget: "markdown", required: false }
+
+  # =====================
+  # NOTICIAS
+  # =====================
+  - name: "news"
+    label: "Noticias"
+    folder: "src/content/news"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} ({{date}})"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Fecha", name: "date", widget: "datetime" }
+      - { label: "Portada", name: "cover", widget: "image", required: false }
+      - { label: "Resumen", name: "excerpt", widget: "text", required: false }
+      - { label: "Contenido", name: "body", widget: "markdown" }
+
+  # =====================
+  # GALERÍA
+  # =====================
+  - name: "gallery"
+    label: "Galería"
+    folder: "src/content/gallery"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}}"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Fecha", name: "date", widget: "datetime", required: false }
+      - label: "Imágenes"
+        name: "images"
+        widget: "list"
+        summary: "{{fields.image}}"
+        fields:
+          - { label: "Imagen", name: "image", widget: "image" }
+          - { label: "Descripción", name: "alt", widget: "string", required: false }

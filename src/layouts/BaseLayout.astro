@@ -1,0 +1,25 @@
+---
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+
+const { title = "Unidad Educativa Municipal Capulí Loma" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-white text-slate-900">
+    <Navbar />
+
+    <main class="pt-16">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

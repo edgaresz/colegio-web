@@ -22,6 +22,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         const hasConfirmation = /confirmation_token=/.test(hash);
         const hasRecovery = /recovery_token=/.test(hash);
         const hasAnyToken = hasInvite || hasConfirmation || hasRecovery;
+        const tokenType = hasInvite
+          ? "invite"
+          : hasConfirmation
+            ? "confirmation"
+            : hasRecovery
+              ? "recovery"
+              : null;
 
         function setStatus(message) {
           if (statusEl) statusEl.textContent = message;
@@ -37,7 +44,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
             identity.open("login");
             if (hasConfirmation) {
-              setStatus("Correo confirmado. Inicia sesión para entrar al panel.");
+              setStatus("Procesando confirmación de correo...");
               return;
             }
 
@@ -53,6 +60,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         }
 
         function start(identity) {
+          identity.on("error", (error) => {
+            const message =
+              error && typeof error === "object" && "message" in error
+                ? String(error.message)
+                : "No se pudo validar el enlace. Solicita uno nuevo.";
+            setStatus(message);
+          });
+
           identity.on("init", (user) => {
             if (!hasAnyToken) {
               setStatus("No se encontró token en la URL.");
@@ -62,6 +77,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             // Si ya hay sesión activa, forzamos logout para mostrar signup.
             if (hasInvite && user) {
               identity.logout();
+            }
+
+            if (tokenType === "confirmation") {
+              if (user) {
+                setStatus("Correo confirmado. Redirigiendo al panel...");
+                window.location.href = "/admin/";
+                return;
+              }
+
+              setStatus("Procesando confirmación de correo...");
             }
 
             tryOpenWidget(identity);
@@ -80,6 +105,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             if (!hasAnyToken) return;
             tryOpenWidget(identity);
           }, 1500);
+
+          if (tokenType === "confirmation") {
+            setTimeout(() => {
+              const user = identity.currentUser();
+              if (user) {
+                setStatus("Correo confirmado. Redirigiendo al panel...");
+                window.location.href = "/admin/";
+                return;
+              }
+
+              setStatus(
+                "No se confirmó el correo con este enlace. Puede estar vencido o ya usado."
+              );
+            }, 3500);
+          }
         }
 
         const waitForIdentity = setInterval(() => {

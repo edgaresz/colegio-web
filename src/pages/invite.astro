@@ -13,46 +13,65 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       Preparando registro...
     </div>
 
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script is:inline>
       (function () {
-        const hasInvite = window.location.hash.includes("invite_token=");
+        const statusEl = document.getElementById("invite-status");
+        const hash = window.location.hash || "";
+        const hasInvite = /invite_token=/.test(hash);
 
-        function openInvite() {
-          const netlifyIdentity = window.netlifyIdentity;
-          if (!netlifyIdentity) return;
-
-          netlifyIdentity.init();
-
-          netlifyIdentity.on("init", (user) => {
-            // Si ya hay sesión, primero cerrar sesión para que aparezca signup
-            if (user) {
-              netlifyIdentity.logout();
-            }
-            if (hasInvite) {
-              netlifyIdentity.open("signup");
-              const el = document.getElementById("invite-status");
-              if (el) el.textContent = "Abriendo formulario para crear contraseña...";
-            }
-          });
-
-          netlifyIdentity.on("signup", () => {
-            window.location.href = "/admin/";
-          });
-
-          netlifyIdentity.on("login", () => {
-            window.location.href = "/admin/";
-          });
+        function setStatus(message) {
+          if (statusEl) statusEl.textContent = message;
         }
 
-        // Espera a que cargue el widget
-        const t = setInterval(() => {
-          if (window.netlifyIdentity) {
-            clearInterval(t);
-            openInvite();
+        function tryOpenSignup(identity) {
+          try {
+            identity.open("signup");
+            setStatus("Abriendo formulario para crear contraseña...");
+          } catch {
+            setStatus("No se pudo abrir el formulario automáticamente.");
           }
-        }, 200);
+        }
 
-        setTimeout(() => clearInterval(t), 8000);
+        function start(identity) {
+          identity.on("init", (user) => {
+            if (!hasInvite) {
+              setStatus("No se encontró invite_token en la URL.");
+              return;
+            }
+
+            // Si ya hay sesión activa, forzamos logout para mostrar signup.
+            if (user) {
+              identity.logout();
+            }
+
+            tryOpenSignup(identity);
+          });
+
+          identity.on("signup", () => {
+            window.location.href = "/admin/";
+          });
+
+          identity.on("login", () => {
+            window.location.href = "/admin/";
+          });
+
+          identity.init();
+          setTimeout(() => tryOpenSignup(identity), 1500);
+        }
+
+        const waitForIdentity = setInterval(() => {
+          if (!window.netlifyIdentity) return;
+          clearInterval(waitForIdentity);
+          start(window.netlifyIdentity);
+        }, 150);
+
+        setTimeout(() => {
+          clearInterval(waitForIdentity);
+          if (!window.netlifyIdentity) {
+            setStatus("No cargó Netlify Identity. Revisa bloqueadores o consola.");
+          }
+        }, 8000);
       })();
     </script>
   </section>

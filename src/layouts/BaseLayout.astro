@@ -22,25 +22,5 @@ const { title = "Unidad Educativa Municipal Capulí Loma" } = Astro.props;
     </main>
 
     <Footer />
-
-    <!-- Netlify Identity (para procesar #invite_token y login) -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-    <script>
-      const netlifyIdentity = window.netlifyIdentity;
-
-      if (netlifyIdentity) {
-        netlifyIdentity.init();
-
-        if (window.location.hash?.includes("invite_token")) {
-          netlifyIdentity.on("init", () => {
-            netlifyIdentity.open("signup");
-          });
-        }
-
-        netlifyIdentity.on("login", () => {
-          window.location.href = "/admin/";
-        });
-      }
-    </script>
   </body>
 </html>

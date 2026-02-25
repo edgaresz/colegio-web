@@ -19,15 +19,34 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         const statusEl = document.getElementById("invite-status");
         const hash = window.location.hash || "";
         const hasInvite = /invite_token=/.test(hash);
+        const hasConfirmation = /confirmation_token=/.test(hash);
+        const hasRecovery = /recovery_token=/.test(hash);
+        const hasAnyToken = hasInvite || hasConfirmation || hasRecovery;
 
         function setStatus(message) {
           if (statusEl) statusEl.textContent = message;
         }
 
-        function tryOpenSignup(identity) {
+        function tryOpenWidget(identity) {
           try {
-            identity.open("signup");
-            setStatus("Abriendo formulario para crear contraseña...");
+            if (hasInvite) {
+              identity.open("signup");
+              setStatus("Abriendo formulario para crear contraseña...");
+              return;
+            }
+
+            identity.open("login");
+            if (hasConfirmation) {
+              setStatus("Correo confirmado. Inicia sesión para entrar al panel.");
+              return;
+            }
+
+            if (hasRecovery) {
+              setStatus("Abriendo recuperación de cuenta...");
+              return;
+            }
+
+            setStatus("Abriendo formulario...");
           } catch {
             setStatus("No se pudo abrir el formulario automáticamente.");
           }
@@ -35,17 +54,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
         function start(identity) {
           identity.on("init", (user) => {
-            if (!hasInvite) {
-              setStatus("No se encontró invite_token en la URL.");
+            if (!hasAnyToken) {
+              setStatus("No se encontró token en la URL.");
               return;
             }
 
             // Si ya hay sesión activa, forzamos logout para mostrar signup.
-            if (user) {
+            if (hasInvite && user) {
               identity.logout();
             }
 
-            tryOpenSignup(identity);
+            tryOpenWidget(identity);
           });
 
           identity.on("signup", () => {
@@ -57,7 +76,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           });
 
           identity.init();
-          setTimeout(() => tryOpenSignup(identity), 1500);
+          setTimeout(() => {
+            if (!hasAnyToken) return;
+            tryOpenWidget(identity);
+          }, 1500);
         }
 
         const waitForIdentity = setInterval(() => {

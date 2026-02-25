@@ -22,5 +22,18 @@ const { title = "Unidad Educativa Municipal Capulí Loma" } = Astro.props;
     </main>
 
     <Footer />
+
+    <script is:inline>
+      (function () {
+        const hash = window.location.hash || "";
+        const hasIdentityToken = /(invite_token|confirmation_token|recovery_token)=/.test(hash);
+        if (!hasIdentityToken) return;
+
+        const cleanPath = window.location.pathname.replace(/\/+$/, "") || "/";
+        if (cleanPath === "/invite") return;
+
+        window.location.replace("/invite" + hash);
+      })();
+    </script>
   </body>
 </html>

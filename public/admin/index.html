@@ -8,31 +8,20 @@
   <body>
     <div id="nc-root"></div>
 
-    <script>
-      // Bridge: si llega el postMessage del worker, guardamos el token donde Decap lo espera.
-      window.addEventListener("message", (event) => {
-        try {
-          if (typeof event.data !== "string") return;
-
-          // Ej: "authorization:github:{...}"
-          if (!event.data.startsWith("authorization:github:")) return;
-
-          console.log("✅ Decap auth message:", event.origin, event.data);
-
-          const payload = JSON.parse(event.data.replace("authorization:github:", ""));
-
-          // Esto es lo que Decap/Netlify CMS suele leer en localStorage
-          localStorage.setItem("netlify-cms-user", JSON.stringify(payload));
-
-          // Forzamos a que Decap re-evalúe auth
-          location.hash = "#/";
-          location.reload();
-        } catch (e) {
-          console.error("❌ Error procesando postMessage:", e);
-        }
-      });
-    </script>
-
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="/admin/vendor/decap-cms.js"></script>
+
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", (user) => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+        window.netlifyIdentity.init();
+      }
+    </script>
   </body>
 </html>

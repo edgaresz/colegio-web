@@ -1,10 +1,54 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const galleryEntries = (await getCollection("gallery")).sort((a, b) => {
+  const aTime = a.data.date ? a.data.date.getTime() : 0;
+  const bTime = b.data.date ? b.data.date.getTime() : 0;
+  return bTime - aTime;
+});
+
+const dateFormatter = new Intl.DateTimeFormat("es-EC", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 ---
 
 <BaseLayout title="Galería | UEM Capulí Loma">
   <div class="mx-auto max-w-4xl px-4 py-14">
     <h1 class="text-3xl font-bold">Galería</h1>
-    <p class="mt-4 text-slate-600">Contenido en construcción.</p>
+    {galleryEntries.length === 0 ? (
+      <p class="mt-4 text-slate-600">Aún no hay publicaciones de galería.</p>
+    ) : (
+      <div class="mt-8 space-y-10">
+        {galleryEntries.map((entry) => (
+          <section>
+            <div class="mb-4 flex items-baseline justify-between gap-4">
+              <h2 class="text-xl font-semibold text-slate-900">{entry.data.title}</h2>
+              {entry.data.date && (
+                <p class="text-sm text-slate-500">{dateFormatter.format(entry.data.date)}</p>
+              )}
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {entry.data.images.map((item, index) => (
+                <figure class="overflow-hidden rounded-2xl border border-[#7FB6E8]/20 bg-white">
+                  <img
+                    src={item.image}
+                    alt={item.alt ?? `${entry.data.title} ${index + 1}`}
+                    class="h-56 w-full object-cover"
+                    loading="lazy"
+                  />
+                  {item.alt && (
+                    <figcaption class="px-3 py-2 text-sm text-slate-600">{item.alt}</figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    )}
   </div>
 </BaseLayout>

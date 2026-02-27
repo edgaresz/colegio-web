@@ -15,6 +15,7 @@ export default function GalleryCarousel3D({
   const timerRef = useRef<number | null>(null);
 
   const safeImages = useMemo(() => {
+    if (images.length === 0) return [];
     if (images.length >= 5) return images;
     const doubled: string[] = [];
     while (doubled.length < 7) doubled.push(...images);

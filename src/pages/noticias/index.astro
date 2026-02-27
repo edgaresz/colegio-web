@@ -1,10 +1,52 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const newsEntries = (await getCollection("news")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+const dateFormatter = new Intl.DateTimeFormat("es-EC", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
+function getSummary(entry: (typeof newsEntries)[number]) {
+  if (entry.data.excerpt) return entry.data.excerpt;
+  const text = entry.body.replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+}
 ---
 
 <BaseLayout title="Noticias | UEM Capulí Loma">
   <div class="mx-auto max-w-4xl px-4 py-14">
     <h1 class="text-3xl font-bold">Noticias</h1>
-    <p class="mt-4 text-slate-600">Contenido en construcción.</p>
+    {newsEntries.length === 0 ? (
+      <p class="mt-4 text-slate-600">Aún no hay noticias publicadas.</p>
+    ) : (
+      <div class="mt-8 space-y-6">
+        {newsEntries.map((entry) => (
+          <article class="overflow-hidden rounded-3xl border border-[#7FB6E8]/20 bg-white">
+            {entry.data.cover && (
+              <img
+                src={entry.data.cover}
+                alt={entry.data.title}
+                class="h-56 w-full object-cover"
+                loading="lazy"
+              />
+            )}
+            <div class="p-6">
+              <p class="text-xs uppercase tracking-wide text-slate-500">
+                {dateFormatter.format(entry.data.date)}
+              </p>
+              <h2 class="mt-2 text-xl font-semibold text-slate-900">{entry.data.title}</h2>
+              {getSummary(entry) && <p class="mt-3 text-slate-700">{getSummary(entry)}</p>}
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
   </div>
 </BaseLayout>
